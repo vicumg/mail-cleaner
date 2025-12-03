@@ -17,17 +17,17 @@ type Config struct {
 
 func LoadConfig(service_name string) *Config {
 	// load from env
-	godotenv.Load(".env")
-	server := os.Getenv(service_name + "_IMAP_SERVER")
-	portStr := os.Getenv(service_name + "_IMAP_PORT")
+	godotenv.Load(".env." + service_name)
+	server := os.Getenv("IMAP_SERVER")
+	portStr := os.Getenv("IMAP_PORT")
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		fmt.Println("Invalid IMAP_PORT")
 		panic("Invalid IMAP_PORT")
 	}
 
-	email := os.Getenv(service_name + "_EMAIL")
-	password := os.Getenv(service_name + "_PASSWORD")
+	email := os.Getenv("EMAIL")
+	password := os.Getenv("PASSWORD")
 
 	return &Config{
 		IMAPServer: server,
