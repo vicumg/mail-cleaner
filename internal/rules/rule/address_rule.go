@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"mail-cleaner/internal/rules"
+	"strings"
 
 	"github.com/emersion/go-imap"
 )
@@ -36,10 +37,14 @@ func (r *AddressRule) ShouldDelete(msg *imap.Message) bool {
 		return false
 	}
 	for _, addr := range msg.Envelope.From {
-		if addr.MailboxName+"@"+addr.HostName == r.Address {
+		if r.apply(addr.MailboxName+"@"+addr.HostName, r.Address) {
 			fmt.Printf("Deleting email from: %s\n", r.Address)
 			return true
 		}
 	}
 	return false
+}
+
+func (r *AddressRule) apply(emailAddress string, ruleAddress string) bool {
+	return strings.EqualFold(emailAddress, ruleAddress)
 }

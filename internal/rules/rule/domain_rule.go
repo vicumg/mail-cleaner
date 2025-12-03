@@ -32,15 +32,21 @@ func NewDomainRule(domain string) (*DomainRule, error) {
 	}, nil
 }
 
-func (r *DomainRule) ShouldDelete(msg *imap.Message) bool {
+func (d *DomainRule) ShouldDelete(msg *imap.Message) bool {
 	if msg.Envelope == nil {
 		return false
 	}
 	for _, addr := range msg.Envelope.From {
-		if strings.Contains(addr.HostName, r.Domain) {
-			fmt.Printf("Deleting email from domain: %s\n", r.Domain)
+		if d.apply(addr.HostName, d.Domain) {
+			fmt.Printf("Deleting email from domain: %s\n", d.Domain)
 			return true
 		}
 	}
 	return false
+}
+
+func (d *DomainRule) apply(emailDomain, ruleDomain string) bool {
+	emailDomainLower := strings.ToLower(emailDomain)
+	ruleDomainLower := strings.ToLower(ruleDomain)
+	return strings.Contains(emailDomainLower, ruleDomainLower)
 }
