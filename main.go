@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"mail-cleaner/internal/config"
 	"mail-cleaner/internal/imap"
 	"mail-cleaner/internal/rules"
@@ -28,6 +29,16 @@ func main() {
 		fmt.Printf("Failed to create rules from file: %v\n", err)
 		os.Exit(1)
 	}
+
+	defer func() {
+		for _, r := range rules_list {
+			if closer, ok := r.(io.Closer); ok {
+				if err := closer.Close(); err != nil {
+					fmt.Printf("Error closing rule: %v\n", err)
+				}
+			}
+		}
+	}()
 
 	imapClient := imap.NewClient(cfg)
 	if err := imapClient.Connect(); err != nil {

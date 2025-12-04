@@ -36,3 +36,4 @@ Thumbs.db
 
 # Rule sets (if contain sensitive data)
 *.json
+*.log
