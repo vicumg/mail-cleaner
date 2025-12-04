@@ -8,8 +8,10 @@ Automatic email cleanup utility using IMAP protocol with configurable deletion r
 - Delete emails by rules:
   - By sender address
   - By sender domain
+  - By AI classification (using local Ollama)
 - Optimized for large mailboxes (tens of thousands of emails)
 - Multiple email accounts support via configuration
+- AI-powered spam detection with customizable prompts
 
 ---
 
@@ -84,8 +86,6 @@ go build -o mail-cleaner
   "address": "noreply@spam.com"
 }
 ```
-Deletes all emails from `noreply@spam.com`.
-
 #### 2. Domain Rule - delete by domain
 ```json
 {
@@ -114,29 +114,98 @@ Deletes all emails from domains containing `marketing.com` (e.g., `news@marketin
   {
     "type": "domain_rule",
     "domain": "marketing"
+  },
+  {
+    "type": "ai_local_rule",
+    "enabled": true,
+    "action": "log",
+    "prompt": "Is this email spam? answer only one word:(spam or ham).",
+    "host_url": "http://localhost:11434",
+    "model": "llama3.2:1b",
+    "exclude_domains": ["mycompany.com"],
+    "exclude_addresses": ["boss@example.com"]
   }
+]
+```exclude_addresses` - list of trusted email addresses to skip
+
+**Requirements:**
+- Install Ollama: `brew install ollama` (macOS) or visit [ollama.ai](https://ollama.ai)
+- Pull model: `ollama pull mistral`
+- Start server: `ollama serve` (or runs automatically)
+
+**Workflow:**
+1. Start with `"action": "log"` to test AI accuracy
+2. Review `spam_classification.log` file
+3. Adjust `exclude_domains` and `exclude_addresses` if needed
+4. Switch to `"action": "delete"` when confident
+```
+Deletes all emails from domains containing `marketing.com` (e.g., `news@marketing.com`, `promo@marketing.com`).
+
+### Full Rules File Example
+
+```json
+[
+  {
+    "type": "address_rule",
+    "address": "no-reply@mail.instagram.com"
+  },
+  {
+    "type": "address_rule",
+    "address": "notification@facebookmail.com"
+  },
+  {
+    "type": "domain_rule",
+    "domain": "newsletter.com"
+  },
+### Delete specific addresses
+```json
+[
+  {"type": "address_rule", "address": "spam@example.com"},
+  {"type": "address_rule", "address": "ads@company.com"}
 ]
 ```
 
----
-
-## ⚙️ Email Service Configuration
-
-### Ukr.net
-Create `.env.ukrnet`:
-```env
-IMAP_SERVER=imap.ukr.net
-IMAP_PORT=993
-EMAIL=your-email@ukr.net
-PASSWORD=your-password
+### Use AI to detect spam (test mode)
+```json
+[
+  {
+    "type": "ai_local_rule",
+    "enabled": true,
+    "action": "log",
+    "exclude_domains": ["work.com", "clients.com"],
+    "exclude_addresses": ["boss@company.com"]
+  }
+]
 ```
+Check `spam_classification.log` to verify AI accuracy before switching to `"action": "delete"`.
+### Connection Error
+```
+Error connecting to IMAP server: dial tcp: lookup failed
+```
+**Solution:** Check IMAP_SERVER and IMAP_PORT in `.env.<service-name>`
 
-⚠️ **Note:** This tool was tested with Ukr.net. For other IMAP servers, create appropriate `.env.<service>` file with your server settings.
+### Authentication Error
+```
+Error connecting to IMAP server: LOGIN failed
+```
+**Solution:** 
+- Check EMAIL and PASSWORD in `.env.<service-name>`
+- Enable IMAP in email settings
 
----
+### No Rules Found
+```
+No valid rules found in the rules file.
+```
+**Solution:** Check JSON syntax in rules file
 
-## 🔍 Usage Examples
-
+### AI Rule Connection Error
+```
+Error classifying email: connection refused
+```
+**Solution:** 
+- Make sure Ollama is installed: `brew install ollama`
+- Start Ollama server: `ollama serve`
+- Pull the model: `ollama pull mistral`
 ### Delete all newsletters
 ```json
 [
