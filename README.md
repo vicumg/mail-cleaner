@@ -56,22 +56,54 @@ PASSWORD=your-app-password
 ### Usage
 
 ```bash
-go run . <service-name> <rules-file>
+# Using go run
+go run ./cmd/mail-cleaner <service-name> <rules-file>
+
+# Or using compiled binary
+./mail-cleaner <service-name> <rules-file>
 ```
 
 **Example:**
 
 ```bash
 # Clean ukr.net mailbox with rules from rules.json
-go run . ukrnet rules.json
+go run ./cmd/mail-cleaner ukrnet rules.json
+
+# Or with binary
+./mail-cleaner ukrnet rules.json
 ```
 
 ### Build
 
 ```bash
-go build -o mail-cleaner
-./mail-cleaner ukrnet rules.json
+# Build all commands (mail-cleaner and analyze)
+make build
+
+# Or build manually
+go build -o mail-cleaner ./cmd/mail-cleaner
+go build -o analyze ./cmd/analyze
+
+# Run without building
+go run ./cmd/mail-cleaner ukrnet rules.json
 ```
+
+### Analyze Spam Logs
+
+After running AI rule in log mode, analyze the results:
+
+```bash
+# Using compiled binary
+./analyze spam_classification.log
+
+# Or using go run
+go run ./cmd/analyze spam_classification.log
+```
+
+This will show:
+- Total spam emails detected
+- Top spam domains
+- Top spam addresses  
+- Sample spam subjects
 
 ---
 

@@ -5,6 +5,10 @@
 *.so
 *.dylib
 
+# Project binaries
+/mail-cleaner
+/analyze
+
 # Test binary, built with `go test -c`
 *.test
 
