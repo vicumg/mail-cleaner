@@ -50,14 +50,24 @@ func init() {
 		//todo: make client configurable
 		client := ollama.NewClient(baseURL, model)
 
-		excludedDomains, ok := config["exclude_domains"].([]string)
-		if !ok && enabled {
-			panic("Must contains at least one excluded domain")
+		// Parse excluded_domains from []interface{} to []string
+		excludedDomains := []string{}
+		if domainsRaw, ok := config["excluded_domains"].([]interface{}); ok {
+			for _, d := range domainsRaw {
+				if domain, ok := d.(string); ok {
+					excludedDomains = append(excludedDomains, domain)
+				}
+			}
 		}
 
-		excludedAddresses, ok := config["exclude_addresses"].([]string)
-		if !ok && enabled {
-			panic("Must contains at least one excluded address")
+		// Parse excluded_addresses from []interface{} to []string
+		excludedAddresses := []string{}
+		if addressesRaw, ok := config["excluded_addresses"].([]interface{}); ok {
+			for _, a := range addressesRaw {
+				if address, ok := a.(string); ok {
+					excludedAddresses = append(excludedAddresses, address)
+				}
+			}
 		}
 
 		return NewAIRule(enabled, action, prompt, client, excludedDomains, excludedAddresses)
